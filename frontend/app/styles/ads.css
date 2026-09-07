@@ -49,6 +49,32 @@
   grid-row: 1;
 }
 
+@media (min-width: 1200px) {
+  .ad-supported-layout:has(> .ad-supported-content > .page-shell),
+  .ad-supported-layout:has(> .ad-supported-content > .loading-page) {
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .ad-supported-content:has(> .page-shell),
+  .ad-supported-content:has(> .loading-page) {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .ad-supported-content > .page-shell,
+  .ad-supported-content > .loading-page {
+    min-height: 0;
+    flex: 1;
+  }
+
+  .ad-supported-layout:has(> .ad-supported-content > .page-shell) .ad-slot-rail,
+  .ad-supported-layout:has(> .ad-supported-content > .loading-page) .ad-slot-rail {
+    align-self: start;
+  }
+}
+
 .ad-slot-rail .adsbygoogle {
   min-height: 560px;
 }

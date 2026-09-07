@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.schemas.youtube import AnalyzeCommentsResponse, CollectCommentsRequest, CollectCommentsResponse, PrepareCommentsResponse, ResolveRequest, ResolveResponse, TargetType
 from app.services.analysis_pipeline import analyze_target, collect_target_comments
-from app.services.comment_processing import create_batches, preprocess_comments
+from app.services.comment_processing import (
+    create_batches,
+    prepare_analysis_comments,
+    preprocess_comments,
+)
 from app.services.gemini_service import GeminiResponseValidationError, GeminiService, GeminiServiceError, get_gemini_service
 from app.services.youtube_service import YouTubeCommentsUnavailableError, YouTubeNotFoundError, YouTubeService, YouTubeServiceError, get_youtube_service
 from app.services.youtube_target import InvalidYouTubeUrl, detect_youtube_target
@@ -43,7 +47,7 @@ async def collect_comments(request: CollectCommentsRequest, service: YouTubeServ
 async def prepare_comments(request: CollectCommentsRequest, service: YouTubeService = Depends(get_youtube_service)) -> PrepareCommentsResponse:
     try:
         target_type, info, comments, analyzed_video_count = await collect_target_comments(request, service)
-        processed_comments = preprocess_comments(comments)
+        processed_comments = prepare_analysis_comments(preprocess_comments(comments))
         return PrepareCommentsResponse(
             target_type=target_type,
             target=info,

@@ -77,11 +77,11 @@ API 키는 백엔드 환경 변수에서만 사용합니다. `.env` 파일은 �
 
 ### 댓글 전처리 및 배치 API (Phase 4)
 
-`POST /api/youtube/comments/prepare`는 댓글을 수집한 뒤 빈 값과 중복을 제거하고 공백을 정리합니다. 응답의 `batches`는 Gemini에 전달할 `{ id, text }` 객체를 기본 200개씩 나눈 목록입니다.
+`POST /api/youtube/comments/prepare`는 댓글을 수집한 뒤 빈 값과 중복을 제거하고 공백을 정리합니다. 개인정보 형식을 마스킹하고 원본 댓글 ID를 요청 범위의 임시 ID로 바꾼 다음, Gemini에 전달할 `{ id, text }` 객체를 기본 200개씩 나눕니다.
 
 ### Gemini 댓글 분석 API (Phase 5)
 
-`.env`에 `GEMINI_API_KEY`를 설정한 뒤 `POST /api/youtube/comments/analyze`를 호출합니다. 전처리된 댓글을 200개씩 Gemini에 보내고, 각 댓글에 대해 `category`, `topic`, `sentiment`을 반환합니다. Gemini 응답은 구조화된 JSON과 Pydantic 검증을 모두 통과해야 반환됩니다.
+`.env`에 `GEMINI_API_KEY`를 설정한 뒤 `POST /api/youtube/comments/analyze`를 호출합니다. 전처리된 댓글을 200개씩 Gemini에 보내고, 각 댓글에 대해 `category`, `topic`, `sentiment`와 개인정보 잔존 여부를 판정합니다. 개인정보 가능성이 표시된 댓글은 결과와 집계에서 제외하며, 나머지 응답만 구조화된 JSON과 Pydantic 검증을 거쳐 반환합니다.
 
 장난스러운 과장, 밈, 친근한 놀림, 웃음 표현은 명확한 불만이나 공격 의도가 없는 한 `complaint` 또는 `toxic`으로 분류하지 않도록 프롬프트 기준을 적용합니다.
 
@@ -136,7 +136,9 @@ Next.js Metadata API로 페이지별 제목·설명·canonical URL, Open Graph/T
 
 ### 서비스 안내와 정책
 
-푸터에서 서비스 소개, 분석 기준, 이용약관, 개인정보처리방침, YouTube 이용약관 및 광고 설정에 접근할 수 있습니다. 공개 배포 전에는 개인정보처리방침의 운영자 연락처를 실제 문의 수단으로 교체해야 합니다.
+푸터에서 서비스 소개, 분석 기준, 이용약관, 개인정보처리방침, YouTube 이용약관 및 광고 설정에 접근할 수 있습니다. 정책 문서는 현재 구현된 비회원·무DB 구조, YouTube Data API, 무료 Gemini API 및 AdSense 처리를 기준으로 작성되어 있습니다. 배포 환경에는 `LEGAL_OPERATOR_NAME`, `LEGAL_PRIVACY_OFFICER_NAME`, `LEGAL_CONTACT_EMAIL`, `LEGAL_EFFECTIVE_DATE`, `LEGAL_HOSTING_PROVIDER`, `LEGAL_HOSTING_COUNTRY`, `LEGAL_HOSTING_LOG_RETENTION_DAYS`를 실제 운영 정보와 배포 환경에 맞게 설정해야 합니다. 이메일 대신 문의 페이지를 쓸 때는 `LEGAL_CONTACT_URL`을 사용할 수 있습니다. 호스팅 접속 로그의 실제 보관 기간도 문서의 설정값과 일치시켜야 합니다. 외부 서비스나 저장 방식이 바뀌면 정책 문서도 함께 갱신합니다.
+
+댓글은 Gemini 요청 전에 일반 코드 기반 필터로 연락처, 고유식별정보, 금융정보, 링크, 계정 식별자와 주소 형식을 마스킹하고 원본 YouTube 댓글 ID를 요청 범위의 임시 ID로 교체합니다. Gemini가 남은 개인정보 가능성을 표시한 댓글은 분석 결과와 집계에서 제외하며, 근거 댓글에는 마스킹된 텍스트만 사용합니다. 로컬 AI 모델은 사용하지 않습니다. 무료 Gemini API로 전송한 입력과 생성 결과는 Google 제품 개선 및 사람의 검토에 사용될 수 있으므로 이 사실을 개인정보처리방침과 분석 전 필수 동의 문구에 표시합니다.
 
 ## 검증
 

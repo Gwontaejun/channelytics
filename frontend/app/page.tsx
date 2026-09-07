@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { Dashboard } from "../src/features/analysis/Dashboard";
 import { AdSupportedLayout } from "../src/shared/AdSupportedLayout";
 import { AnalysisResponse } from "../src/types/analysis";
@@ -158,6 +159,14 @@ export default function Home() {
           <button type="submit">
             분석하기 <span aria-hidden="true">→</span>
           </button>
+          <label className="privacy-consent">
+            <input type="checkbox" required />
+            <span>
+              <Link href="/terms">이용약관</Link>과{" "}
+              <Link href="/privacy">개인정보처리방침</Link>의 무료 Gemini AI
+              처리·국외 처리 내용을 확인했으며, 만 18세 이상입니다.
+            </span>
+          </label>
         </form>
         {message && (
           <p className="request-message" role="status">

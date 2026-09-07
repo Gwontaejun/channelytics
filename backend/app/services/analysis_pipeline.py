@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from app.schemas.youtube import (
+    AnalysisComment,
     ChannelInfo,
     CollectCommentsRequest,
     Comment,
@@ -18,7 +19,11 @@ from app.services.analysis_aggregation import (
     attach_content_idea_evidence,
     without_evidence,
 )
-from app.services.comment_processing import create_batches, preprocess_comments
+from app.services.comment_processing import (
+    create_batches,
+    prepare_analysis_comments,
+    preprocess_comments,
+)
 from app.services.gemini_service import GeminiService
 from app.services.youtube_service import YouTubeService
 from app.services.youtube_target import detect_youtube_target
@@ -29,7 +34,7 @@ class AnalysisPipelineResult:
     target_type: TargetType
     target: ChannelInfo | VideoInfo
     collected_comments: list[Comment]
-    processed_comments: list[Comment]
+    processed_comments: list[AnalysisComment]
     analysis_results: list[CommentAnalysis]
     categories: dict[str, int]
     topics: list[TopicEvidence]
@@ -63,7 +68,8 @@ async def analyze_target(
     target_type, info, collected_comments, analyzed_video_count = await collect_target_comments(
         request, youtube_service
     )
-    processed_comments = preprocess_comments(collected_comments)
+    normalized_comments = preprocess_comments(collected_comments)
+    processed_comments = prepare_analysis_comments(normalized_comments)
     comment_text_by_id = {comment.id: comment.text for comment in processed_comments}
     analysis_results: list[CommentAnalysis] = []
     for batch in create_batches(processed_comments):

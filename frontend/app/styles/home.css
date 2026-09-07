@@ -111,12 +111,32 @@
   min-height: 64px;
   padding: 0 20px;
 }
-.privacy-note {
-  margin: 12px 0 0;
+.privacy-consent {
+  display: flex;
+  grid-column: 1 / -1;
+  max-width: 720px;
+  align-items: flex-start;
+  justify-self: center;
+  gap: 9px;
+  margin-top: 1px;
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.6;
-  text-align: center;
+  text-align: left;
+}
+.privacy-consent input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  accent-color: var(--blue);
+}
+.privacy-consent a {
+  color: #d7cfda;
+  text-underline-offset: 3px;
+}
+.privacy-consent a:hover {
+  color: var(--blue);
 }
 .request-message {
   margin: 20px 0 0;

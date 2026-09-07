@@ -77,7 +77,7 @@ def test_analyze_endpoint_returns_validated_comment_analyses() -> None:
         app.dependency_overrides.clear()
 
     assert response.status_code == 200
-    assert response.json()["analysisResults"] == [{"id": "comment1", "category": "positive", "topic": None, "sentiment": "positive"}]
+    assert response.json()["analysisResults"] == [{"id": "c1", "category": "positive", "topic": None, "sentiment": "positive"}]
     assert response.json()["categories"]["positive"] == 1
     assert response.json()["categories"]["spam"] == 0
     assert response.json()["topics"] == []

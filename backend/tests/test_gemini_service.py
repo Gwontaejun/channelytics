@@ -17,7 +17,7 @@ async def test_analyze_batch_uses_structured_json_and_validates_response() -> No
     async def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["x-goog-api-key"] == "test-key"
         assert json.loads(request.content)["generationConfig"]["responseMimeType"] == "application/json"
-        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": '[{"id":"1","category":"question","topic":"battery test","sentiment":"neutral"}]'}]}}]})
+        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": '[{"id":"1","category":"question","topic":"battery test","sentiment":"neutral","containsPersonalInformation":false}]'}]}}]})
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         analyses = await GeminiService("test-key", "gemini-test", client).analyze_batch([AnalysisComment(id="1", text="How is battery life?")])
@@ -29,7 +29,7 @@ async def test_analyze_batch_uses_structured_json_and_validates_response() -> No
 @pytest.mark.asyncio
 async def test_analyze_batch_rejects_missing_or_wrong_comment_ids() -> None:
     async def handler(_: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": '[{"id":"wrong","category":"other","topic":null,"sentiment":"neutral"}]'}]}}]})
+        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": '[{"id":"wrong","category":"other","topic":null,"sentiment":"neutral","containsPersonalInformation":false}]'}]}}]})
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
         with pytest.raises(GeminiResponseValidationError, match="incomplete"):
@@ -100,3 +100,35 @@ def test_classification_prompt_preserves_playful_comment_context() -> None:
     assert "Never invent" in prompt
     assert "광고가 많음" in prompt
     assert 'explicitly mentions "광고"' in prompt
+    assert "containsPersonalInformation" in prompt
+    assert "Never repeat the detected information" in prompt
+
+
+@pytest.mark.asyncio
+async def test_analyze_batch_discards_comments_flagged_for_privacy() -> None:
+    async def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": '[{"id":"c1","category":"other","topic":null,"sentiment":"neutral","containsPersonalInformation":true},{"id":"c2","category":"positive","topic":null,"sentiment":"positive","containsPersonalInformation":false}]'
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+        )
+
+    comments = [
+        AnalysisComment(id="c1", text="개인정보가 의심되는 댓글"),
+        AnalysisComment(id="c2", text="좋아요"),
+    ]
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        analyses = await GeminiService("test-key", "gemini-test", client).analyze_batch(comments)
+
+    assert [analysis.id for analysis in analyses] == ["c2"]

@@ -3,7 +3,7 @@ import json
 from typing import Any
 
 import httpx
-from pydantic import TypeAdapter, ValidationError
+from pydantic import Field, TypeAdapter, ValidationError
 
 from app.core.config import get_settings
 from app.schemas.youtube import (
@@ -14,6 +14,11 @@ from app.schemas.youtube import (
     FinalInsight,
     InsightInput,
 )
+from app.services.comment_processing import mask_personal_information
+
+
+class _CommentAnalysisDecision(CommentAnalysis):
+    contains_personal_information: bool = Field(alias="containsPersonalInformation")
 
 
 class GeminiServiceError(RuntimeError):
@@ -39,20 +44,33 @@ class GeminiService:
         response = await self._generate_content(_build_classification_prompt(comments), _analysis_response_schema())
         try:
             text = response["candidates"][0]["content"]["parts"][0]["text"]
-            analyses = TypeAdapter(list[CommentAnalysis]).validate_json(text)
+            decisions = TypeAdapter(list[_CommentAnalysisDecision]).validate_json(text)
         except (KeyError, IndexError, TypeError, ValidationError) as error:
             raise GeminiResponseValidationError("Gemini returned an invalid analysis response") from error
 
         expected_ids = [comment.id for comment in comments]
-        if len(analyses) != len(expected_ids) or {analysis.id for analysis in analyses} != set(expected_ids):
+        if len(decisions) != len(expected_ids) or {decision.id for decision in decisions} != set(expected_ids):
             raise GeminiResponseValidationError("Gemini returned incomplete analysis results")
-        return analyses
+        return [
+            CommentAnalysis(
+                id=decision.id,
+                category=decision.category,
+                topic=(
+                    mask_personal_information(decision.topic)
+                    if decision.topic
+                    else None
+                ),
+                sentiment=decision.sentiment,
+            )
+            for decision in decisions
+            if not decision.contains_personal_information
+        ]
 
     async def generate_final_insight(self, insight_input: InsightInput) -> FinalInsight:
         response = await self._generate_content(_build_insight_prompt(insight_input), _insight_response_schema())
         try:
             text = response["candidates"][0]["content"]["parts"][0]["text"]
-            return FinalInsight.model_validate_json(text)
+            return _sanitize_final_insight(FinalInsight.model_validate_json(text))
         except (KeyError, IndexError, TypeError, ValidationError) as error:
             raise GeminiResponseValidationError("Gemini returned an invalid insight response") from error
 
@@ -110,6 +128,12 @@ Tone and context rules:
 - Laughter markers (for example ㅋㅋ, lol, emojis), playful phrasing, and familiar fan-community style can indicate a non-hostile reaction.
 - For example, "왜 처음부터 거길 보여줍니까 ㅋㅋ" is a playful reaction and should normally be other with neutral or positive sentiment, not complaint.
 - Use complaint only when the comment clearly expresses dissatisfaction or asks for an improvement; use toxic only for genuinely hostile or abusive intent.
+
+Privacy rules:
+- The input was masked by deterministic server-side filters. Independently inspect every comment for any personal, sensitive, confidential, contact, financial, location, account, or unique identifying information that may remain.
+- Set containsPersonalInformation to true when such information remains. For an excluded comment, use category other, topic null, and sentiment neutral. Never repeat the detected information in any output field.
+- Ordinary references to public creators, guests, celebrities, products, or fictional characters by name are not personal-information disclosures by themselves.
+- Return one decision for every input id. The server will discard every decision marked containsPersonalInformation before aggregation.
 
 Use exactly one category. Sentiment must be positive, neutral, or negative. Use a short, generalized Korean topic for questions, content requests, and complaints when possible; otherwise use null.
 
@@ -189,10 +213,40 @@ def _analysis_response_schema() -> dict[str, Any]:
                 "category": {"type": "STRING", "enum": ["positive", "question", "content_request", "complaint", "toxic", "spam", "other"]},
                 "topic": {"type": "STRING", "nullable": True},
                 "sentiment": {"type": "STRING", "enum": ["positive", "neutral", "negative"]},
+                "containsPersonalInformation": {"type": "BOOLEAN"},
             },
-            "required": ["id", "category", "topic", "sentiment"],
+            "required": ["id", "category", "topic", "sentiment", "containsPersonalInformation"],
         },
     }
+
+
+def _sanitize_final_insight(insight: FinalInsight) -> FinalInsight:
+    return insight.model_copy(
+        update={
+            "summary": mask_personal_information(insight.summary),
+            "top_requests": [
+                item.model_copy(update={"topic": mask_personal_information(item.topic)})
+                for item in insight.top_requests
+            ],
+            "top_complaints": [
+                item.model_copy(update={"topic": mask_personal_information(item.topic)})
+                for item in insight.top_complaints
+            ],
+            "content_ideas": [
+                idea.model_copy(
+                    update={
+                        "title": mask_personal_information(idea.title),
+                        "reason": mask_personal_information(idea.reason),
+                        "source_topics": [
+                            mask_personal_information(topic)
+                            for topic in idea.source_topics
+                        ],
+                    }
+                )
+                for idea in insight.content_ideas
+            ],
+        }
+    )
 
 
 def _insight_response_schema() -> dict[str, Any]:
