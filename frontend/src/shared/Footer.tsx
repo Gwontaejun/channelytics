@@ -29,13 +29,6 @@ export function Footer() {
           >
             YouTube 이용약관
           </a>
-          <a
-            href="https://adssettings.google.com/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            광고 설정
-          </a>
         </nav>
       </div>
     </footer>
