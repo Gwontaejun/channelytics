@@ -7,6 +7,10 @@ import "./styles/footer-and-legal.css";
 import { Footer } from "../src/shared/Footer";
 import { siteConfig } from "../src/shared/seo";
 
+const adsenseClientId =
+  process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID?.trim() ?? "";
+const isValidAdsenseClientId = /^ca-pub-\d+$/.test(adsenseClientId);
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   applicationName: siteConfig.name,
@@ -55,6 +59,9 @@ export const metadata: Metadata = {
   category: "technology",
   ...(process.env.GOOGLE_SITE_VERIFICATION
     ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
+  ...(isValidAdsenseClientId
+    ? { other: { "google-adsense-account": adsenseClientId } }
     : {}),
 };
 
