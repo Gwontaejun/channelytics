@@ -1,5 +1,7 @@
 <div align="center">
 
+  <img src="./frontend/app/icon.svg" width="112" alt="Channelytics app icon" />
+
 # Channelytics
 
 ### 공개 YouTube 데이터에서 채널과 시청자 반응의 흐름을 읽습니다
@@ -11,6 +13,10 @@
   <img src="https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Google_Gemini-3.1_Flash_Lite-4285F4?style=flat-square&logo=google&logoColor=white" alt="Google Gemini" />
 </p>
+
+  <a href="https://channelytics-app.vercel.app/">
+    <img src="https://img.shields.io/badge/Channelytics_Live-Open-8BA8FF?style=for-the-badge&logo=vercel&logoColor=white" alt="Open Channelytics" />
+  </a>
 
 </div>
 
