@@ -89,103 +89,44 @@ Browser → Next.js /api/analyze → FastAPI /api/analyze
 
 채널 URL은 댓글을 수집하지 않습니다. 최근 공개 영상과 채널 공개 지표를 가져온 뒤 채널 인사이트를 생성합니다.
 
-## 시작하기
+## 커밋 컨벤션
 
-### 요구 사항
+Conventional Commits 형식을 사용하며 변경 내용은 한국어로 작성합니다.
 
-- Node.js 20 이상
-- Python 3.13 이상
-- YouTube Data API v3 키
-- Gemini API 키
-
-### 1. 환경 변수 설정
-
-```powershell
-Copy-Item backend/.env.example backend/.env
-Copy-Item frontend/.env.example frontend/.env.local
+```text
+type: 변경 내용
 ```
 
-`backend/.env`에 API 키를 설정합니다.
+### 타입
 
-```env
-YOUTUBE_API_KEY=your_youtube_data_api_key
-GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-3.1-flash-lite
+- `feat`: 새로운 기능
+- `fix`: 오류 수정
+- `refactor`: 기능 변화가 없는 구조 개선
+- `style`: UI 또는 CSS 변경
+- `perf`: 성능 개선
+- `chore`: 설정, 의존성, 빌드 작업
+- `docs`: 문서 변경
+- `test`: 테스트 추가 및 수정
+
+### 작성 규칙
+
+- `type`은 영문 소문자로 작성합니다.
+- 변경 내용은 간결한 한국어로 작성합니다.
+- 문장 끝에 마침표를 붙이지 않습니다.
+- 하나의 커밋에는 하나의 목적만 담습니다.
+
+### 예시
+
+```text
+feat: 채널 대시보드 AI 인사이트 추가
+fix: 댓글 비활성화 영상을 수집 대상에서 제외
+style: 영상 분석 결과 카드 간격 조정
+perf: 채널 성과 차트를 클라이언트에서 동적 로드
+refactor: 댓글 집계와 최종 인사이트 생성 로직 분리
+chore: AdSense 사이트 소유권 메타 태그 추가
+docs: 프로젝트 구조와 기술 스택 정리
+test: 개인정보 마스킹 회귀 테스트 추가
 ```
-
-`frontend/.env.local`에서는 필요에 따라 백엔드 주소, 사이트 URL, 법적 고지 정보, AdSense 식별자를 설정합니다. 공개 환경에서는 `SITE_URL`을 실제 도메인으로 지정해야 canonical URL, sitemap, robots 및 Open Graph URL이 올바르게 생성됩니다.
-
-### 2. 실행
-
-프로젝트 루트에서 백엔드와 프런트엔드를 각각 실행합니다.
-
-```powershell
-npm run dev
-npm run frontend
-```
-
-- Frontend: `http://localhost:3000`
-- Backend API 문서: `http://127.0.0.1:8000/docs`
-
-백엔드 가상환경과 의존성은 최초 `npm run dev` 실행 시 자동으로 준비됩니다. 수동 실행은 아래와 같습니다.
-
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
-```
-
-## API
-
-서비스 화면은 `POST /api/analyze`만 호출합니다. 프런트엔드의 Route Handler가 백엔드로 요청을 프록시하므로 API 키는 브라우저에 노출되지 않습니다.
-
-```http
-POST /api/analyze
-Content-Type: application/json
-
-{
-  "url": "https://www.youtube.com/watch?v=...",
-  "maxComments": 1000
-}
-```
-
-개발 및 검증을 위한 세부 엔드포인트도 제공합니다.
-
-- `POST /api/youtube/resolve` — URL 판별 및 채널·영상 메타데이터 조회
-- `POST /api/youtube/comments` — 댓글 수집
-- `POST /api/youtube/comments/prepare` — 전처리, 개인정보 마스킹, Gemini 배치 생성
-- `POST /api/youtube/comments/analyze` — 댓글 분류·집계·최종 인사이트까지 실행
-
-예상 가능한 URL, 조회 실패, 댓글 비활성화, AI 응답 검증 오류는 안전한 HTTP 오류 응답으로 변환합니다. 외부 제공자의 오류 본문이나 traceback은 반환하지 않습니다.
-
-## 분석 범위와 제한
-
-- 영상 분석은 일반 시청자 댓글만 반영하며, 영상·채널 소유자가 작성한 댓글은 제외합니다.
-- 채널 분석의 댓글 수집은 채널 최신 영상 기준으로 동작하고, 영상당 최대 200개의 일반 시청자 댓글을 수집합니다.
-- 댓글이 비활성화된 영상은 건너뜁니다.
-- YouTube API가 제공하지 않는 공개 싫어요 수는 표시하지 않습니다.
-- 채널 성과 차트는 업로드 날짜별 **현재 누적 조회수**를 보여 주는 공개 데이터 스냅샷이며, 과거 성장 추이나 비공개 YouTube Analytics를 의미하지 않습니다.
-- AI 출력은 참고용 인사이트이며, 사실 판단 또는 성과를 보장하지 않습니다.
-
-## 검증
-
-```powershell
-npm run test:backend
-npm run lint
-npm run build
-```
-
-백엔드 테스트는 YouTube·Gemini HTTP 호출을 모킹하므로 실제 API 키나 네트워크 연결이 필요하지 않습니다.
-
-## 작업 원칙
-
-- API 키는 백엔드 환경 변수에서만 관리하고 소스·프런트엔드에 포함하지 않습니다.
-- URL 파싱은 `backend/app/services/youtube_target.py`, YouTube 연동은 `backend/app/services/youtube_service.py`에 유지합니다.
-- 외부·API 경계 데이터는 Pydantic 스키마로 검증합니다.
-- 버그 수정에는 회귀 테스트를 추가하고, 변경 후 관련 테스트와 프런트 lint/build를 실행합니다.
-- 커밋 메시지는 Conventional Commits 형식을 사용하며 변경 내용은 한국어로 작성합니다.
 
 ---
 
