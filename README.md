@@ -1,27 +1,175 @@
+<div align="center">
+
 # Channelytics
 
-YouTube 채널 또는 영상 URL을 받아 대상 유형을 판별하고 공개 메타데이터를 조회하는 MVP입니다.
+### 공개 YouTube 데이터에서 채널과 시청자 반응의 흐름을 읽습니다
 
-현재 구현 범위: Phase 0~2
+<p>
+  <img src="https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Google_Gemini-3.1_Flash_Lite-4285F4?style=flat-square&logo=google&logoColor=white" alt="Google Gemini" />
+</p>
 
-- Next.js + TypeScript 프런트엔드 기본 화면
-- FastAPI 백엔드 및 `GET /health`
-- YouTube URL(Channel/Video) 판별
-- YouTube Data API v3 기반 채널·영상 정보 조회
-- 영상 댓글 수집 및 채널 최근 영상 댓글 누적 수집 (최대 1,000개)
+</div>
 
-## 빠른 시작
+## 소개
 
-### 짧은 개발 명령어
+**Channelytics**는 YouTube 채널 또는 영상 URL을 입력하면 공개 데이터를 바탕으로 콘텐츠 성과와 시청자 반응을 정리하는 분석 서비스입니다.
 
-프로젝트 최상단에서 아래 명령을 사용합니다. `npm run dev`는 첫 실행 때 backend 가상환경과 Python 패키지를 자동으로 설치합니다.
+영상 분석에서는 댓글을 수집해 AI로 분류하고, 주요 요청·불만·콘텐츠 아이디어를 근거 댓글과 함께 제공합니다. 채널 분석에서는 최근 28일 공개 영상의 성과와 포맷별 흐름, 최근 콘텐츠에 대한 AI 인사이트를 확인할 수 있습니다.
 
-```powershell
-npm run dev       # FastAPI 백엔드 실행
-npm run frontend  # Next.js 프런트엔드 실행 (별도 터미널)
+> 공개 YouTube 데이터만 사용합니다. 채널의 비공개 분석 데이터, 구독자 증감 이력, 과거 시점의 조회수 추이는 제공하지 않으며 데이터를 영구 저장하지 않습니다.
+
+## 주요 기능
+
+- **URL 자동 판별** — `youtube.com/watch`, `youtu.be`, `/channel/`, `@handle` 형식의 영상·채널 URL을 구분합니다.
+- **영상 댓글 분석** — 일반 시청자 댓글을 최대 1,000개 수집하고, 긍정·질문·콘텐츠 요청·불만·악성·스팸 등으로 분류합니다.
+- **개인정보 보호 처리** — Gemini 요청 전에 이메일, 전화번호, 계좌·카드 번호, 주소, 링크, 계정 식별자 등을 마스킹하고 원본 댓글 ID를 요청 범위의 임시 ID로 교체합니다.
+- **근거 중심 인사이트** — 상위 요청·불만 토픽과 콘텐츠 아이디어에 분석 대상 댓글을 함께 연결합니다.
+- **채널 성과 스냅샷** — 최근 28일 업로드된 공개 영상을 조회하고 롱폼·Shorts별 현재 누적 조회수 흐름을 시각화합니다.
+- **채널 AI 인사이트** — 최근 12개 영상의 공개 지표를 바탕으로 강점과 다음 콘텐츠 기회를 구조화해 제안합니다.
+- **반응형 대시보드** — 입력, 분석 중 안내, 영상·채널별 결과 화면을 데스크톱과 모바일에서 제공합니다.
+- **운영 기본 구성** — SEO 메타데이터, Open Graph 이미지, sitemap, robots, 서비스·개인정보처리방침·이용약관 및 AdSense 레이아웃을 포함합니다.
+
+## 기술 스택
+
+### Frontend
+
+<p>
+  <img src="https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Recharts-3-22B5BF?style=flat-square" alt="Recharts" />
+</p>
+
+### Backend & AI
+
+<p>
+  <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Pydantic-2-E92063?style=flat-square&logo=pydantic&logoColor=white" alt="Pydantic" />
+  <img src="https://img.shields.io/badge/YouTube_Data_API_v3-FF0000?style=flat-square&logo=youtube&logoColor=white" alt="YouTube Data API v3" />
+  <img src="https://img.shields.io/badge/Google_Gemini-4285F4?style=flat-square&logo=google&logoColor=white" alt="Google Gemini" />
+</p>
+
+## 프로젝트 구조
+
+```text
+youtube-analyzer/
+├─ backend/
+│  ├─ app/
+│  │  ├─ api/                 # 분석·YouTube API 라우터
+│  │  ├─ core/                # 환경 변수 설정
+│  │  ├─ schemas/             # Pydantic 요청·응답 모델
+│  │  └─ services/            # URL 판별, YouTube, Gemini, 전처리, 집계 파이프라인
+│  ├─ tests/                  # 외부 HTTP 호출을 모킹한 단위 테스트
+│  └─ requirements.txt
+├─ frontend/
+│  ├─ app/                    # Next.js App Router, API 프록시, SEO·정적 페이지·스타일
+│  └─ src/
+│     ├─ components/           # 공용 UI
+│     ├─ data/                 # 화면 표시용 데이터
+│     ├─ features/analysis/    # 영상·채널 분석 대시보드
+│     ├─ shared/               # 광고, 푸터, SEO, 법적 고지 공용 코드
+│     └─ types/                # API 응답 타입
+├─ scripts/                    # 로컬 백엔드 실행 스크립트
+├─ AGENTS.md                   # 프로젝트 작업 가이드
+└─ package.json                # 루트 명령어
 ```
 
-검증 명령어:
+분석 요청은 다음 경로를 따릅니다.
+
+```text
+Browser → Next.js /api/analyze → FastAPI /api/analyze
+        → YouTube Data API → 댓글 전처리·개인정보 마스킹
+        → Gemini 분류 → Python 집계 → Gemini 최종 인사이트 → Dashboard
+```
+
+채널 URL은 댓글을 수집하지 않습니다. 최근 공개 영상과 채널 공개 지표를 가져온 뒤 채널 인사이트를 생성합니다.
+
+## 시작하기
+
+### 요구 사항
+
+- Node.js 20 이상
+- Python 3.13 이상
+- YouTube Data API v3 키
+- Gemini API 키
+
+### 1. 환경 변수 설정
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env.local
+```
+
+`backend/.env`에 API 키를 설정합니다.
+
+```env
+YOUTUBE_API_KEY=your_youtube_data_api_key
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-3.1-flash-lite
+```
+
+`frontend/.env.local`에서는 필요에 따라 백엔드 주소, 사이트 URL, 법적 고지 정보, AdSense 식별자를 설정합니다. 공개 환경에서는 `SITE_URL`을 실제 도메인으로 지정해야 canonical URL, sitemap, robots 및 Open Graph URL이 올바르게 생성됩니다.
+
+### 2. 실행
+
+프로젝트 루트에서 백엔드와 프런트엔드를 각각 실행합니다.
+
+```powershell
+npm run dev
+npm run frontend
+```
+
+- Frontend: `http://localhost:3000`
+- Backend API 문서: `http://127.0.0.1:8000/docs`
+
+백엔드 가상환경과 의존성은 최초 `npm run dev` 실행 시 자동으로 준비됩니다. 수동 실행은 아래와 같습니다.
+
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
+```
+
+## API
+
+서비스 화면은 `POST /api/analyze`만 호출합니다. 프런트엔드의 Route Handler가 백엔드로 요청을 프록시하므로 API 키는 브라우저에 노출되지 않습니다.
+
+```http
+POST /api/analyze
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=...",
+  "maxComments": 1000
+}
+```
+
+개발 및 검증을 위한 세부 엔드포인트도 제공합니다.
+
+- `POST /api/youtube/resolve` — URL 판별 및 채널·영상 메타데이터 조회
+- `POST /api/youtube/comments` — 댓글 수집
+- `POST /api/youtube/comments/prepare` — 전처리, 개인정보 마스킹, Gemini 배치 생성
+- `POST /api/youtube/comments/analyze` — 댓글 분류·집계·최종 인사이트까지 실행
+
+예상 가능한 URL, 조회 실패, 댓글 비활성화, AI 응답 검증 오류는 안전한 HTTP 오류 응답으로 변환합니다. 외부 제공자의 오류 본문이나 traceback은 반환하지 않습니다.
+
+## 분석 범위와 제한
+
+- 영상 분석은 일반 시청자 댓글만 반영하며, 영상·채널 소유자가 작성한 댓글은 제외합니다.
+- 채널 분석의 댓글 수집은 채널 최신 영상 기준으로 동작하고, 영상당 최대 200개의 일반 시청자 댓글을 수집합니다.
+- 댓글이 비활성화된 영상은 건너뜁니다.
+- YouTube API가 제공하지 않는 공개 싫어요 수는 표시하지 않습니다.
+- 채널 성과 차트는 업로드 날짜별 **현재 누적 조회수**를 보여 주는 공개 데이터 스냅샷이며, 과거 성장 추이나 비공개 YouTube Analytics를 의미하지 않습니다.
+- AI 출력은 참고용 인사이트이며, 사실 판단 또는 성과를 보장하지 않습니다.
+
+## 검증
 
 ```powershell
 npm run test:backend
@@ -29,124 +177,18 @@ npm run lint
 npm run build
 ```
 
-프런트엔드는 `http://localhost:3000`에서 실행됩니다. `frontend/.env.example`을 `.env.local`로 복사해 백엔드 URL을 바꿀 수 있으며, 비밀 API 키는 프런트엔드 환경 변수에 넣지 않습니다. 배포할 때는 `SITE_URL`을 실제 공개 도메인으로 설정해야 canonical URL, sitemap, robots, 공유 이미지 주소가 올바르게 생성됩니다.
+백엔드 테스트는 YouTube·Gemini HTTP 호출을 모킹하므로 실제 API 키나 네트워크 연결이 필요하지 않습니다.
 
-### Backend
+## 작업 원칙
 
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-# .env에 YOUTUBE_API_KEY를 설정
-uvicorn app.main:app --reload
-```
+- API 키는 백엔드 환경 변수에서만 관리하고 소스·프런트엔드에 포함하지 않습니다.
+- URL 파싱은 `backend/app/services/youtube_target.py`, YouTube 연동은 `backend/app/services/youtube_service.py`에 유지합니다.
+- 외부·API 경계 데이터는 Pydantic 스키마로 검증합니다.
+- 버그 수정에는 회귀 테스트를 추가하고, 변경 후 관련 테스트와 프런트 lint/build를 실행합니다.
+- 커밋 메시지는 Conventional Commits 형식을 사용하며 변경 내용은 한국어로 작성합니다.
 
-API 문서: `http://127.0.0.1:8000/docs`
+---
 
-### Frontend
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
-
-## API
-
-`POST /api/youtube/resolve`
-
-```json
-{ "url": "https://youtu.be/dQw4w9WgXcQ" }
-```
-
-API 키는 백엔드 환경 변수에서만 사용합니다. `.env` 파일은 절대 커밋하지 않습니다.
-
-### 댓글 수집 API (Phase 3)
-
-`POST /api/youtube/comments`
-
-```json
-{ "url": "https://youtu.be/dQw4w9WgXcQ", "maxComments": 100 }
-```
-
-영상은 해당 영상의 댓글을, 채널은 최신 영상부터 댓글 수가 `maxComments`에 도달할 때까지 수집합니다. 채널 분석에서는 한 영상당 최대 200개의 일반 시청자 댓글만 반영합니다. 댓글이 비활성화된 영상은 채널 수집에서 건너뜁니다. 업로더(채널 주인)가 작성한 댓글은 수집 결과와 분석 대상에서 제외합니다.
-
-`maxComments`는 최종적으로 분석할 일반 시청자 댓글 수입니다. 채널 주인 댓글은 한 번에 가져온 댓글 페이지에서 제외한 뒤, 다음 일반 댓글로 자동 보충합니다.
-
-### 댓글 전처리 및 배치 API (Phase 4)
-
-`POST /api/youtube/comments/prepare`는 댓글을 수집한 뒤 빈 값과 중복을 제거하고 공백을 정리합니다. 개인정보 형식을 마스킹하고 원본 댓글 ID를 요청 범위의 임시 ID로 바꾼 다음, Gemini에 전달할 `{ id, text }` 객체를 기본 200개씩 나눕니다.
-
-### Gemini 댓글 분석 API (Phase 5)
-
-`.env`에 `GEMINI_API_KEY`를 설정한 뒤 `POST /api/youtube/comments/analyze`를 호출합니다. 전처리된 댓글을 200개씩 Gemini에 보내고, 각 댓글에 대해 `category`, `topic`, `sentiment`와 개인정보 잔존 여부를 판정합니다. 개인정보 가능성이 표시된 댓글은 결과와 집계에서 제외하며, 나머지 응답만 구조화된 JSON과 Pydantic 검증을 거쳐 반환합니다.
-
-장난스러운 과장, 밈, 친근한 놀림, 웃음 표현은 명확한 불만이나 공격 의도가 없는 한 `complaint` 또는 `toxic`으로 분류하지 않도록 프롬프트 기준을 적용합니다.
-
-토픽은 댓글에 명시된 내용만 근거로 정규화합니다. 예를 들어 광고 불만을 자막·편집 문제처럼 추론하지 않도록 제한합니다.
-
-### 분류 품질 점검 (Phase 12)
-
-대표적인 웃음·콘텐츠 요청·광고 불만·악성 표현·질문·장난스러운 반응을 실제 Gemini 호출로 점검했습니다. 프롬프트는 장난스러운 비판을 불만으로 과대 분류하지 않고, 토픽을 댓글에 명시된 내용에서만 뽑도록 보강했습니다.
-
-### 분석 집계 (Phase 6)
-
-`/api/youtube/comments/analyze`는 댓글별 분석 결과와 함께 Python에서 계산한 `categories`(모든 카테고리별 개수) 및 `topics`(빈도순 주제 목록)를 반환합니다. 숫자 집계는 Gemini에 맡기지 않습니다.
-
-### 최종 인사이트 (Phase 7)
-
-`/api/youtube/comments/analyze`는 집계 데이터만 다시 Gemini에 전달해 한국어 `insight`를 생성합니다. `summary`, `topRequests`, `topComplaints`, `contentIdeas`를 구조화된 JSON으로 반환하며, 개별 댓글 원문은 최종 인사이트 호출에 다시 보내지 않습니다. 각 `topics`와 `contentIdeas`에는 최대 3개의 `evidenceComments`를 붙여, 어떤 실제 댓글이 근거가 되었는지 확인할 수 있습니다.
-
-### 최종 분석 API (Phase 8)
-
-앱에서는 `POST /api/analyze`만 사용합니다.
-
-```json
-{ "url": "https://youtube.com/watch?v=...", "maxComments": 1000 }
-```
-
-채널과 영상 URL을 자동 판별하고, 댓글 수집부터 최종 인사이트까지 처리합니다. 개발·검증용 `/api/youtube/...` 엔드포인트는 계속 사용할 수 있습니다.
-
-### 분석 중 UI (Phase 10)
-
-분석이 진행되는 동안 프런트엔드는 실제 수치가 아닌 단계형 안내 문구를 표시합니다. 현재는 Queue, Redis, SSE를 사용하지 않으므로 실제 댓글 수나 영상 수 진행률은 표시하지 않습니다.
-
-### 결과 대시보드 (Phase 11)
-
-분석이 완료되면 입력 화면은 반응형 대시보드로 전환됩니다. 영상·채널별 헤더, 카테고리 분포, 콘텐츠 요청, 불만, AI 요약, 콘텐츠 아이디어 및 근거 댓글을 표시합니다.
-
-UI는 외부 이미지 의존성 없이 CSS 기반의 픽셀 아케이드 스타일을 사용하며, 작은 화면에서도 주요 정보와 입력 요소를 유지합니다.
-
-### Google AdSense
-
-메인 검색 화면, 분석 로딩 화면, 결과 대시보드는 하나의 공통 광고 레이아웃을 유지합니다. 넓은 데스크톱에서는 왼쪽 여백에 세로형 AdSense 광고 하나를 표시하고, 모바일에서는 Google이 공식 지원하는 하단 앵커 광고를 사용합니다. 태블릿에서는 광고를 표시하지 않습니다. `frontend/.env.example`을 참고해 아래 공개 식별자를 `.env.local`에 설정하면 광고 코드가 활성화됩니다.
-
-```env
-NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID=ca-pub-발급받은_게시자_ID
-NEXT_PUBLIC_GOOGLE_ADSENSE_LEFT_RAIL_SLOT_ID=왼쪽_광고단위_ID
-```
-
-게시자 ID가 없으면 실제 광고 스크립트를 렌더링하지 않습니다. 데스크톱 왼쪽 광고에는 광고 단위 ID도 필요하고, 모바일 하단 광고는 Google의 하단 앵커 형식을 사용합니다. AdSense에서 다른 자동 광고 형식을 추가로 켜면 지정한 영역 밖에도 광고가 표시될 수 있으므로 불필요한 인페이지·전면 광고 형식은 끄거나 페이지 제외 설정을 사용합니다. 실제 배포 전에는 AdSense 사이트 승인, 루트 도메인의 `ads.txt`, 개인정보처리방침의 운영자 정보, 그리고 필요한 지역의 동의 메시지(CMP)를 별도로 설정해야 합니다.
-
-### SEO
-
-Next.js Metadata API로 페이지별 제목·설명·canonical URL, Open Graph/Twitter 공유 이미지, 구조화 데이터를 제공합니다. `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest`도 자동 생성됩니다. 배포 환경에는 `SITE_URL=https://실제도메인`을 설정하고, Google Search Console 등록 후 필요하면 `GOOGLE_SITE_VERIFICATION`에 HTML 태그의 `content` 값을 입력합니다. 개인정보처리방침과 이용약관은 링크 탐색은 허용하지만 검색 색인에서는 제외합니다.
-
-### 서비스 안내와 정책
-
-푸터에서 서비스 소개, 분석 기준, 이용약관, 개인정보처리방침, YouTube 이용약관 및 광고 설정에 접근할 수 있습니다. 정책 문서는 현재 구현된 비회원·무DB 구조, YouTube Data API, 무료 Gemini API 및 AdSense 처리를 기준으로 작성되어 있습니다. 배포 환경에는 `LEGAL_OPERATOR_NAME`, `LEGAL_PRIVACY_OFFICER_NAME`, `LEGAL_CONTACT_EMAIL`, `LEGAL_EFFECTIVE_DATE`, `LEGAL_HOSTING_PROVIDER`, `LEGAL_HOSTING_COUNTRY`, `LEGAL_HOSTING_LOG_RETENTION_DAYS`를 실제 운영 정보와 배포 환경에 맞게 설정해야 합니다. 이메일 대신 문의 페이지를 쓸 때는 `LEGAL_CONTACT_URL`을 사용할 수 있습니다. 호스팅 접속 로그의 실제 보관 기간도 문서의 설정값과 일치시켜야 합니다. 외부 서비스나 저장 방식이 바뀌면 정책 문서도 함께 갱신합니다.
-
-댓글은 Gemini 요청 전에 일반 코드 기반 필터로 연락처, 고유식별정보, 금융정보, 링크, 계정 식별자와 주소 형식을 마스킹하고 원본 YouTube 댓글 ID를 요청 범위의 임시 ID로 교체합니다. Gemini가 남은 개인정보 가능성을 표시한 댓글은 분석 결과와 집계에서 제외하며, 근거 댓글에는 마스킹된 텍스트만 사용합니다. 로컬 AI 모델은 사용하지 않습니다. 무료 Gemini API로 전송한 입력과 생성 결과는 Google 제품 개선 및 사람의 검토에 사용될 수 있으므로 이 사실을 개인정보처리방침과 분석 전 필수 동의 문구에 표시합니다.
-
-## 검증
-
-```powershell
-cd backend
-pytest
-```
-
-Video URL analysis responses include the official public YouTube metric `likeCount` in `target`. Public dislike counts are not provided by the YouTube API and are intentionally not shown.
-
-Channel URL analysis does not collect comments. It returns public channel statistics and all public videos uploaded during the latest 28 calendar days with their current view, like, comment, and duration data. The dashboard groups those current cumulative views by upload date and format for its performance chart, while Gemini receives only the latest twelve videos for structured channel insights. It does not claim historical growth or private analytics, and it stores no historical data.
+<div align="center">
+  공개 데이터에서 시청자 반응을 읽고, 다음 콘텐츠의 방향을 찾습니다.
+</div>
