@@ -15,10 +15,21 @@ function getAdMode(): AdMode {
   return "none";
 }
 
-export function AdSupportedLayout({ children }: { children: ReactNode }) {
+export function AdSupportedLayout({
+  children,
+  showAds = false,
+}: {
+  children: ReactNode;
+  showAds?: boolean;
+}) {
   const [adMode, setAdMode] = useState<AdMode | null>(null);
 
   useEffect(() => {
+    if (!showAds) {
+      setAdMode(null);
+      return;
+    }
+
     const desktopQuery = window.matchMedia("(min-width: 1200px)");
     const mobileQuery = window.matchMedia("(max-width: 760px)");
     const updateAdMode = () => setAdMode(getAdMode());
@@ -30,11 +41,11 @@ export function AdSupportedLayout({ children }: { children: ReactNode }) {
       desktopQuery.removeEventListener("change", updateAdMode);
       mobileQuery.removeEventListener("change", updateAdMode);
     };
-  }, []);
+  }, [showAds]);
 
   return (
     <div className="ad-supported-layout">
-      {adMode === "desktop" ? (
+      {showAds && adMode === "desktop" ? (
         <AdSenseSlot
           placement="left-rail"
           slotId={leftRailSlotId}
@@ -43,7 +54,7 @@ export function AdSupportedLayout({ children }: { children: ReactNode }) {
       ) : null}
       <div className="ad-supported-content">{children}</div>
       <div className="ad-rail-balance" aria-hidden="true" />
-      {adMode === "mobile" ? <MobileAnchorAd /> : null}
+      {showAds && adMode === "mobile" ? <MobileAnchorAd /> : null}
     </div>
   );
 }

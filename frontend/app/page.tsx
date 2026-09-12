@@ -40,6 +40,25 @@ function isChannelUrl(value: string) {
   }
 }
 
+function hasEligibleAnalysisContent(result: AnalysisResponse | null) {
+  if (!result) return false;
+
+  if (result.targetType === "channel") {
+    return (
+      result.recentVideos.length > 0 &&
+      Boolean(result.channelInsight?.summary.trim())
+    );
+  }
+
+  return (
+    result.totalComments >= 10 &&
+    Boolean(result.summary.trim()) &&
+    (result.topRequests.length > 0 ||
+      result.topComplaints.length > 0 ||
+      result.contentIdeas.length > 0)
+  );
+}
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const maxComments = 1000;
@@ -168,5 +187,9 @@ export default function Home() {
     </main>
   );
 
-  return <AdSupportedLayout>{content}</AdSupportedLayout>;
+  return (
+    <AdSupportedLayout showAds={hasEligibleAnalysisContent(result)}>
+      {content}
+    </AdSupportedLayout>
+  );
 }
