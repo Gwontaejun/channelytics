@@ -114,10 +114,16 @@ export default function Home() {
     await analyzeUrl(url);
   }
 
+  function resetAnalysis() {
+    setResult(null);
+    setUrl("");
+    setMessage("");
+  }
+
   const content = result ? (
     <Dashboard
       result={result}
-      onReset={() => setResult(null)}
+      onReset={resetAnalysis}
       onAnalyzeChannel={(channelId) =>
         analyzeUrl(`https://www.youtube.com/channel/${channelId}`)
       }
