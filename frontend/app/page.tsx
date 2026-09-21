@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { Dashboard } from "../src/features/analysis/Dashboard";
-import { AdSupportedLayout } from "../src/shared/AdSupportedLayout";
 import { AnalysisResponse } from "../src/types/analysis";
 
 const videoLoading = {
@@ -38,25 +37,6 @@ function isChannelUrl(value: string) {
   } catch {
     return false;
   }
-}
-
-function hasEligibleAnalysisContent(result: AnalysisResponse | null) {
-  if (!result) return false;
-
-  if (result.targetType === "channel") {
-    return (
-      result.recentVideos.length > 0 &&
-      Boolean(result.channelInsight?.summary.trim())
-    );
-  }
-
-  return (
-    result.totalComments >= 10 &&
-    Boolean(result.summary.trim()) &&
-    (result.topRequests.length > 0 ||
-      result.topComplaints.length > 0 ||
-      result.contentIdeas.length > 0)
-  );
 }
 
 export default function Home() {
@@ -193,9 +173,5 @@ export default function Home() {
     </main>
   );
 
-  return (
-    <AdSupportedLayout showAds={hasEligibleAnalysisContent(result)}>
-      {content}
-    </AdSupportedLayout>
-  );
+  return content;
 }
